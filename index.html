@@ -1,0 +1,1736 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>더제이 코퍼레이션 (The J Corp.) - 3D 싸이월드 오피스 (미드센추리 사장실 & 중앙 대회의실)</title>
+  <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <style>
+    :root {
+      --cy-orange: #ff6600;
+      --cy-navy: #1d4e89;
+      --cy-border: #7f9db5;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background:
+        repeating-linear-gradient(45deg, #6491b3 0px, #6491b3 12px, #6e9bbd 12px, #6e9bbd 24px);
+      font-family: 'Noto Sans KR', sans-serif;
+      color: #222;
+      min-height: 100vh;
+      padding: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .pixel-font { font-family: 'DotGothic16', 'Noto Sans KR', monospace; }
+
+    .cyworld-skin {
+      width: 1580px;
+      max-width: 99.5vw;
+      height: 955px;
+      max-height: 98.5vh;
+      background: #b2cce0;
+      border: 3px solid #3d5d78;
+      border-radius: 18px;
+      box-shadow: 0 20px 55px rgba(10, 28, 45, 0.55), inset 0 2px 0 rgba(255,255,255,0.75);
+      padding: 10px;
+      display: flex;
+    }
+
+    .cyworld-dashed {
+      width: 100%;
+      height: 100%;
+      border: 2px dashed #ffffff;
+      border-radius: 14px;
+      padding: 9px;
+      display: grid;
+      grid-template-columns: 230px 1fr 375px;
+      gap: 9px;
+      background: rgba(235, 243, 250, 0.78);
+    }
+
+    .cy-panel {
+      background: #ffffff;
+      border: 2px solid var(--cy-border);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* 좌측 컬럼 */
+    .left-col { padding: 9px; gap: 6px; }
+    .today-counter {
+      text-align: center; font-size: 11px; font-weight: 800; color: #444;
+      background: #eef4f8; border: 1px solid #cbd9e4; border-radius: 6px; padding: 4px;
+    }
+    .today-counter .hot { color: var(--cy-orange); font-weight: 900; }
+
+    .company-logo-box {
+      padding: 8px 7px;
+      background: linear-gradient(135deg, #162230 0%, #2b4766 100%);
+      border-radius: 8px;
+      color: #fff;
+      text-align: center;
+      border: 2px solid #d8b467;
+    }
+    .company-logo-box .sub { font-size: 9px; color: #f3d28c; letter-spacing: 1px; }
+    .company-logo-box .main { font-size: 14.5px; font-weight: 900; margin: 2px 0; }
+    .company-logo-box .brands { font-size: 9.5px; color: #ffd9ec; }
+
+    .brand-card {
+      border-radius: 6px; padding: 5px 7px; font-size: 10px; line-height: 1.3;
+    }
+    .brand-card.lamurmur { background: #fdf8f0; border: 1px solid #dec292; }
+    .brand-card.mafacon { background: #fff4f8; border: 1px solid #f0b2cd; }
+    .brand-card h4 { font-size: 10.5px; margin-bottom: 2px; display: flex; justify-content: space-between; }
+
+    .org-tree-box {
+      flex: 1; border: 1px solid #d5dfe7; border-radius: 8px; padding: 6px;
+      background: #f9fbfd; overflow-y: auto;
+    }
+    .org-tree-title {
+      font-size: 11px; font-weight: 900; color: var(--cy-navy);
+      border-bottom: 1px dashed #b9cad8; padding-bottom: 4px; margin-bottom: 5px;
+      display: flex; justify-content: space-between;
+    }
+    .dept-item {
+      padding: 4.5px 6px; border-radius: 6px; margin-bottom: 4px;
+      background: #fff; border: 1px solid #dde6ee; cursor: pointer; font-size: 10px;
+      transition: 0.15s;
+    }
+    .dept-item:hover, .dept-item.active {
+      border-color: var(--cy-orange); background: #fff7f0; transform: translateX(2px);
+    }
+    .dept-item.ceo-room-item {
+      background: linear-gradient(90deg, #fff8eb 0%, #ffedd5 100%);
+      border-color: #d97706;
+    }
+    .dept-item .dept-head { font-weight: 800; display: flex; justify-content: space-between; }
+    .dept-item .dept-members { color: #555; font-size: 9px; margin-top: 1px; }
+
+    /* 중앙 3D 미니룸 컬럼 */
+    .center-col { padding: 9px; gap: 6px; position: relative; }
+    .cy-header-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 2px solid #3c6990; padding-bottom: 4px;
+    }
+    .cy-title { font-size: 15px; font-weight: 900; color: #1c4973; }
+    .cy-url {
+      font-size: 10.5px; color: #ff6600; font-weight: 800;
+      background: #fff3eb; padding: 2px 8px; border-radius: 12px; border: 1px solid #ffcca8;
+    }
+
+    .bgm-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      background: #f0f5f9; border: 1px solid #cad8e4; border-radius: 6px;
+      padding: 4px 9px; font-size: 10.5px;
+    }
+    .flow-status-badge {
+      background: #1d4e89; color: #fff; padding: 2px 9px; border-radius: 12px; font-weight: 700;
+    }
+    .flow-status-badge.working {
+      background: var(--cy-orange); animation: pulse 0.8s infinite alternate;
+    }
+    @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.04); } }
+
+    /* 3D 뷰포트 */
+    .stage-3d-wrapper {
+      flex: 1;
+      position: relative;
+      border: 2.5px solid #52718c;
+      border-radius: 10px;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 35%, #e8f1fa 0%, #bfd3e6 100%);
+      box-shadow: inset 0 0 25px rgba(0,0,0,0.15);
+    }
+
+    #canvas3dContainer {
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+    }
+    #canvas3dContainer:active { cursor: grabbing; }
+
+    .cam-toolbar {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 20;
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      background: rgba(255,255,255,0.93);
+      border: 1.5px solid #6b88a1;
+      border-radius: 7px;
+      padding: 4px 6px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+    }
+    .cam-btn {
+      background: #f1f5f9;
+      border: 1px solid #94a3b8;
+      border-radius: 5px;
+      padding: 3px 7px;
+      font-size: 10px;
+      font-weight: 800;
+      color: #1e293b;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .cam-btn:hover, .cam-btn.active {
+      background: var(--cy-orange);
+      color: #fff;
+      border-color: #c2410c;
+    }
+
+    .action-toolbar {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      z-index: 20;
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      background: rgba(22, 34, 48, 0.9);
+      border: 1.5px solid #f59e0b;
+      border-radius: 8px;
+      padding: 5px 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+    .act-btn {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 5px;
+      padding: 3px 8px;
+      font-size: 10px;
+      font-weight: 800;
+      color: #111;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .act-btn:hover {
+      background: #ff6600;
+      color: #fff;
+      border-color: #ff6600;
+    }
+    .act-btn.gold {
+      background: #fef3c7;
+      border-color: #d97706;
+      color: #92400e;
+    }
+    .act-btn.gold:hover {
+      background: #d97706;
+      color: #fff;
+    }
+
+    #labelsOverlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 10;
+    }
+
+    .label-3d {
+      position: absolute;
+      transform: translate(-50%, -100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      pointer-events: auto;
+      cursor: pointer;
+    }
+    .label-3d:hover {
+      z-index: 30;
+      transform: translate(-50%, -105%) scale(1.06);
+    }
+
+    .bubble-3d {
+      background: #ffffd4;
+      border: 1.5px solid #222;
+      border-radius: 6px;
+      padding: 2px 6px;
+      font-size: 9.5px;
+      font-weight: 800;
+      color: #111;
+      white-space: nowrap;
+      box-shadow: 2px 2px 0 rgba(0,0,0,0.22);
+      margin-bottom: 3px;
+      position: relative;
+    }
+    .bubble-3d::after {
+      content: "";
+      position: absolute;
+      bottom: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 5px 4px 0;
+      border-style: solid;
+      border-color: #222 transparent;
+    }
+    .label-3d.working .bubble-3d {
+      background: #ff6600;
+      color: #fff;
+      border-color: #7c2d12;
+      animation: bounce3d 0.45s infinite alternate;
+    }
+    @keyframes bounce3d {
+      from { transform: translateY(0); }
+      to { transform: translateY(-5px); }
+    }
+
+    .nameplate-3d {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1.5px solid #64748b;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 9px;
+      font-weight: 800;
+      color: #111;
+      white-space: nowrap;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.18);
+    }
+    .label-3d.leader .nameplate-3d {
+      background: #fff3e0;
+      border: 2px solid #ff6600;
+    }
+    .label-3d.ceo .nameplate-3d {
+      background: linear-gradient(90deg, #fef3c7 0%, #fde68a 100%);
+      border: 2px solid #b45309;
+      color: #78350f;
+      font-size: 9.5px;
+    }
+    .gender-m { color: #1d62b5; }
+    .gender-f { color: #d6336c; }
+
+    .zone-banner-3d {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      padding: 2px 8px;
+      border-radius: 5px;
+      font-size: 9.5px;
+      font-weight: 900;
+      color: #fff;
+      white-space: nowrap;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.28);
+      border: 1.5px solid rgba(255,255,255,0.85);
+      pointer-events: none;
+    }
+
+    /* 하단 원클릭 업무 지시 바 */
+    .scenario-bar {
+      display: flex; gap: 5px; flex-wrap: wrap; align-items: center;
+      background: #f5f8fb; border: 1px solid #cedbe6; padding: 5px 8px; border-radius: 8px;
+    }
+    .scenario-label { font-size: 10.5px; font-weight: 900; color: var(--cy-navy); }
+    .cy-btn {
+      background: #fff; border: 1.5px solid #7d9ab3; border-radius: 6px;
+      padding: 4px 8px; font-size: 10px; font-weight: 700; color: #234; cursor: pointer;
+    }
+    .cy-btn:hover, .cy-btn.primary {
+      background: var(--cy-orange); color: #fff; border-color: #cc4400;
+    }
+
+    /* 하단 일촌평 */
+    .ilchon-log-box {
+      height: 80px; border: 1px solid #cbd8e3; border-radius: 8px;
+      background: #fff; padding: 4px 8px; display: flex; flex-direction: column;
+    }
+    .ilchon-header {
+      font-size: 10.5px; font-weight: 900; color: #1d4e89;
+      border-bottom: 1px solid #e3ebf2; padding-bottom: 2px; margin-bottom: 3px;
+      display: flex; justify-content: space-between;
+    }
+    .ilchon-list {
+      flex: 1; overflow-y: auto; font-size: 10px; display: flex; flex-direction: column; gap: 2px;
+    }
+    .ilchon-item { display: flex; gap: 5px; align-items: baseline; }
+    .ilchon-item .badge {
+      font-size: 9px; font-weight: 800; padding: 1px 4px; border-radius: 3px; color: #fff; white-space: nowrap;
+    }
+
+    /* 우측: 한지훈 팀장 단독 보고창 */
+    .right-col { padding: 9px; gap: 7px; background: linear-gradient(180deg, #ffffff 0%, #f4f8fc 100%); }
+    .report-header {
+      background: linear-gradient(90deg, #1b4979 0%, #2b67a3 100%);
+      color: #fff; padding: 8px 10px; border-radius: 8px;
+      display: flex; align-items: center; gap: 8px; border: 2px solid #f39c12;
+    }
+    .leader-avatar-badge {
+      width: 36px; height: 36px; background: #fff; border-radius: 50%;
+      border: 2px solid #ff6600; display: flex; justify-content: center; align-items: center; font-size: 19px;
+    }
+    .report-header-text h3 { font-size: 12.5px; font-weight: 900; }
+    .report-header-text p { font-size: 9.5px; color: #ffd79a; }
+
+    .chat-window {
+      flex: 1; border: 1.5px solid #c5d5e3; border-radius: 8px;
+      background: #edf3f8; padding: 8px; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 7px;
+    }
+    .msg-ceo {
+      align-self: flex-end; background: #ff6600; color: #fff;
+      padding: 6px 9px; border-radius: 11px 11px 2px 11px; max-width: 88%;
+      font-size: 11px; font-weight: 700;
+    }
+    .msg-leader {
+      align-self: flex-start; background: #ffffff; border: 1.5px solid #7d9ab3;
+      padding: 8px 10px; border-radius: 2px 11px 11px 11px; max-width: 96%;
+      font-size: 10.5px; line-height: 1.48; color: #222;
+    }
+    .msg-leader .report-title {
+      font-size: 11.5px; font-weight: 900; color: #1b4979;
+      border-bottom: 1.5px dashed #b9cad8; padding-bottom: 4px; margin-bottom: 5px;
+    }
+    .report-section {
+      margin-bottom: 5px; padding: 4px 6px; border-radius: 5px;
+      background: #f8fafc; border-left: 3px solid #1b4979;
+    }
+    .report-section.lm { border-left-color: #c89d54; background: #fdfaf4; }
+    .report-section.mf { border-left-color: #e0538c; background: #fff7fa; }
+    .report-section.adm { border-left-color: #3c7a57; background: #f3faf6; }
+    .report-section h5 { font-size: 10.5px; font-weight: 800; margin-bottom: 2px; }
+
+    .ceo-input-area { display: flex; gap: 5px; }
+    .ceo-input-area input {
+      flex: 1; padding: 7px 9px; border: 2px solid #7d9ab3; border-radius: 6px; font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="cyworld-skin">
+  <div class="cyworld-dashed">
+
+    <!-- ==================== 좌측: 회사 정보 & 3D 공간 네비게이션 ==================== -->
+    <aside class="cy-panel left-col">
+      <div class="today-counter pixel-font">
+        TODAY <span class="hot">CEO</span> &nbsp;|&nbsp; TOTAL <span>175,200</span>
+      </div>
+
+      <div class="company-logo-box">
+        <div class="sub">MID-CENTURY CEO &amp; 3D OFFICE</div>
+        <div class="main">🏢 더제이 코퍼레이션</div>
+        <div class="brands">La Murmur &amp; Ma Façon</div>
+      </div>
+
+      <div class="brand-card lamurmur">
+        <h4>
+          <span>🌸 라머머 (La Murmur)</span>
+          <a href="https://www.lamurmur.com" target="_blank" style="color:#9f7531;text-decoration:none;font-weight:800;">lamurmur.com ↗</a>
+        </h4>
+        <p>• <strong>고급 925 실버 &amp; 14K 주얼리</strong><br>• 3D 쇼케이스 · 세공 · VIP 브랜딩</p>
+      </div>
+
+      <div class="brand-card mafacon">
+        <h4>
+          <span>✨ 마파송 (Ma Façon)</span>
+          <span style="color:#c93b76;font-weight:800;">블링홍 PICK</span>
+        </h4>
+        <p>• <strong>블링홍 직접 사입·착용·검증</strong><br>• 의류 · 양말 · 심플 저가실버 · 잡화<br>• <strong>공동구매 70% + 상시 판매 30%</strong></p>
+      </div>
+
+      <div class="org-tree-box">
+        <div class="org-tree-title">
+          <span>🎥 3D 공간 카메라 이동</span>
+          <span style="color:#ff6600;">대표님+13명</span>
+        </div>
+
+        <div class="dept-item active" onclick="focusCameraZone('all')">
+          <div class="dept-head"><span>🏢 전사 3D 오피스 전체보기</span><span>전체</span></div>
+          <div class="dept-members">사장실 · 중앙 대회의실 · 6개 부서 한눈에</div>
+        </div>
+
+        <div class="dept-item ceo-room-item" onclick="focusCameraZone('ceo')">
+          <div class="dept-head"><span>👑 대표이사 사장실 (미드센추리)</span><span>VIP</span></div>
+          <div class="dept-members">월넛 데스크·바우하우스 체어·카멜 소파·턴테이블</div>
+        </div>
+
+        <div class="dept-item ceo-room-item" onclick="focusCameraZone('conf')">
+          <div class="dept-head"><span>🤝 중앙 대회의실 (글래스 보드룸)</span><span>14석</span></div>
+          <div class="dept-members">오피스 정중앙 대형 회의 테이블 · 대형 스크린</div>
+        </div>
+
+        <div class="dept-item" onclick="focusCameraZone('hq')">
+          <div class="dept-head"><span>🎯 총괄전략기획팀</span><span>3명</span></div>
+          <div class="dept-members">🧑‍💼한지훈 팀장(사장실 직통보고) · 👩‍💻서유진 · 🧑‍💻박도현</div>
+        </div>
+
+        <div class="dept-item" onclick="focusCameraZone('adm')">
+          <div class="dept-head"><span>💼 관리팀 (재무·회계실)</span><span>2명</span></div>
+          <div class="dept-members">👩‍💼김민서 책임(여) · 🧑‍💼이준호 대리(남)</div>
+        </div>
+
+        <div class="dept-item" onclick="focusCameraZone('lm_mkt')">
+          <div class="dept-head"><span>🌸 라머머 마케팅팀</span><span>2명</span></div>
+          <div class="dept-members">👩‍🎨최수아 팀장(여) · 🧑‍🎤정우진 매니저(남)</div>
+        </div>
+
+        <div class="dept-item" onclick="focusCameraZone('lm_rnd')">
+          <div class="dept-head"><span>🧪 라머머 신제품개발팀</span><span>2명</span></div>
+          <div class="dept-members">👩‍🔬윤채원 수석(여) · 🧑‍🔬강태윤 연구원(남)</div>
+        </div>
+
+        <div class="dept-item" onclick="focusCameraZone('mf_mkt')">
+          <div class="dept-head"><span>🔥 마파송 마케팅팀 (공구70%)</span><span>2명</span></div>
+          <div class="dept-members">🧑‍🎨오세훈 팀장(남) · 👩‍🎤신예린 매니저(여)</div>
+        </div>
+
+        <div class="dept-item" onclick="focusCameraZone('mf_trd')">
+          <div class="dept-head"><span>🔭 마파송 신제품서칭팀 (블링홍픽)</span><span>2명</span></div>
+          <div class="dept-members">👩‍💻한소희 팀장(여) · 🧑‍💻송민재 분석가(남)</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ==================== 중앙: 미드센추리 사장실 + 중앙 대회의실 + 6개 부서 3D 오피스 ==================== -->
+    <main class="cy-panel center-col">
+      <div class="cy-header-bar">
+        <div class="cy-title">👑 더제이 코퍼레이션 3D 오피스 (미드센추리 사장실 · 중앙 대회의실 · 실시간 보행 보고)</div>
+        <div class="cy-url">http://cyworld.com/the_j_corp_ceo3d</div>
+      </div>
+
+      <div class="bgm-bar">
+        <div>💿 <strong>BGM</strong> : 프리스타일 - Y &nbsp;|&nbsp; 🛋️ <strong>사장실</strong>: 미드센추리 모던 인테리어 &nbsp;|&nbsp; 🤝 <strong>정중앙</strong>: 유리 대회의실</div>
+        <div id="flowBadge" class="flow-status-badge">🟢 전 부서 근무중 (한지훈 팀장 → 사장실 단독 대면 보고 체계)</div>
+      </div>
+
+      <!-- 3D 캔버스 스테이지 -->
+      <div class="stage-3d-wrapper">
+        <div class="cam-toolbar">
+          <button class="cam-btn active" onclick="focusCameraZone('all')">🏢 전체 쿼터뷰</button>
+          <button class="cam-btn" onclick="focusCameraZone('ceo')">👑 미드센추리 사장실</button>
+          <button class="cam-btn" onclick="focusCameraZone('conf')">🤝 중앙 대회의실</button>
+          <button class="cam-btn" onclick="focusCameraZone('hq')">🎯 전략기획팀</button>
+          <button class="cam-btn" onclick="focusCameraZone('adm')">💼 관리팀</button>
+          <button class="cam-btn" onclick="focusCameraZone('lm_rnd')">🌸 라머머</button>
+          <button class="cam-btn" onclick="focusCameraZone('mf_trd')">✨ 마파송</button>
+          <button class="cam-btn" onclick="focusCameraZone('top')">📐 항공 평면뷰</button>
+        </div>
+
+        <!-- 3D 미니미 이동 액션 툴바 -->
+        <div class="action-toolbar">
+          <span style="color:#ffd79a;font-size:10px;font-weight:900;align-self:center;">🏃 오피스 동선 연출:</span>
+          <button class="act-btn gold" onclick="triggerCeoDirectReport()">👑 한지훈 팀장 → 사장실 걸어가 대표님께 독대 보고</button>
+          <button class="act-btn" onclick="triggerCenterMeeting()">🤝 중앙 대회의실 전 직원 소집 회의</button>
+          <button class="act-btn" onclick="triggerTeamToLeaderReport()">📑 각 팀 → 한지훈 팀장 자리 집합 보고</button>
+          <button class="act-btn" onclick="triggerReturnToDesks()">🪑 전원 각자 자리 복귀</button>
+        </div>
+
+        <div id="canvas3dContainer"></div>
+        <div id="labelsOverlay"></div>
+      </div>
+
+      <!-- 원클릭 업무 지시 바 -->
+      <div class="scenario-bar">
+        <span class="scenario-label">⚡ 대표님 업무 지시 (팀장 취합 → 사장실 독대보고):</span>
+        <button class="cy-btn primary" onclick="runScenario('all')">📢 중앙 대회의실 전체 소집 → 사장실 최종 보고</button>
+        <button class="cy-btn" onclick="runScenario('lamurmur')">💍 [라머머] 14K·고급실버 신상 취합 → 사장실 보고</button>
+        <button class="cy-btn" onclick="runScenario('mafacon')">🧦 [마파송] 블링홍 공구(70%)·상시(30%) 취합 → 사장실 보고</button>
+        <button class="cy-btn" onclick="runScenario('finance')">🧮 [관리팀] 금·은 원가율 &amp; 공구 정산 → 사장실 보고</button>
+      </div>
+
+      <!-- 하단 일촌평 -->
+      <div class="ilchon-log-box">
+        <div class="ilchon-header">
+          <span>💬 3D 오피스 실시간 이동 · 중앙회의실 · 사장실 독대보고 로그</span>
+          <span style="font-size:9.5px;color:#666;">※ 모든 보고는 <strong>한지훈 팀장</strong>이 먼저 취합한 뒤 <strong>미드센추리 사장실</strong>로 걸어와 대표님께 올립니다.</span>
+        </div>
+        <div class="ilchon-list" id="ilchonList"></div>
+      </div>
+    </main>
+
+    <!-- ==================== 우측: 한지훈 팀장 1:1 직통 보고창 ==================== -->
+    <aside class="cy-panel right-col">
+      <div class="report-header">
+        <div class="leader-avatar-badge">🧑‍💼</div>
+        <div class="report-header-text">
+          <h3>총괄전략기획팀장 한지훈 (사장실 직통 보고)</h3>
+          <p>팀원 보고 취합 / 중앙 대회의실 주재 → 사장실 입실 독대 브리핑</p>
+        </div>
+      </div>
+
+      <div class="chat-window" id="chatWindow">
+        <div class="msg-leader">
+          <div class="report-title">🫡 대표님! 미드센추리 모던 사장실과 정중앙 대회의실 건축을 완료했습니다!</div>
+          <strong>1. 👑 대표이사 사장실 (우측 상단 · Mid-Century Modern 인테리어)</strong><br>
+          • <strong>가구/소품</strong>: 다크 월넛 우드 슬랩 데스크 &amp; 크롬 레그, 카멜 브라운 가죽 라운지 소파, 아르떼미데풍 오렌지 버섯 조명(Mushroom Lamp), LP 바이닐 턴테이블 &amp; 마샬 스피커, 기하학 추상화 액자, 체커보드/몬스테라 플랜테리어까지 완벽 세팅했습니다!<br><br>
+          <strong>2. 🤝 중앙 대회의실 (오피스 정중앙 글래스 보드룸)</strong><br>
+          • 사무실 한가운데에 14인용 대형 우드슬랩 회의 테이블과 프레젠테이션 월을 배치했습니다.<br><br>
+          <strong>3. 🚶‍♂️ 2단계 완벽 보고 동선</strong><br>
+          • 업무 지시를 내리시면 ① 담당 팀원들이 <strong>제(한지훈 팀장) 자리 또는 중앙 대회의실</strong>로 모여 보고서를 제출하고 ➔ ② 제가 결재판을 들고 <strong>미드센추리 사장실 안으로 직접 걸어 들어가 대표님 책상 앞에서 단독 보고</strong>드립니다!
+        </div>
+      </div>
+
+      <div class="ceo-input-area">
+        <input type="text" id="ceoInput" placeholder="사장실에서 한지훈 팀장 호출 (예: 한 팀장, 회의 소집해서 블링홍 공구랑 라머머 신상 보고해)" onkeydown="if(event.key==='Enter') handleCustomOrder()" />
+        <button class="cy-btn primary" onclick="handleCustomOrder()">지시 하달</button>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<script>
+  // =========================================================================
+  // 1. 공간 레이아웃:
+  //    - 상단 우측: 👑 미드센추리 모던 사장실 (ceo)
+  //    - 상단 중앙: 🎯 총괄전략기획팀 (hq)
+  //    - 상단 좌측: 💼 관리팀 (adm)
+  //    - 정중앙:    🤝 중앙 대회의실 (conf)
+  //    - 하단 좌측: 🌸 라머머 마케팅팀(lm_mkt) + 신제품개발팀(lm_rnd)
+  //    - 하단 우측: 🔥 마파송 마케팅팀(mf_mkt) + 신제품서칭팀(mf_trd)
+  // =========================================================================
+  const ZONES_3D = {
+    adm:    { title: '💼 관리팀 (재무·회계)', color: 0x3b7a57, hex: '#2e6b49', x: -14.0, z: -10.0, w: 9.5,  d: 7.5 },
+    hq:     { title: '🎯 총괄전략기획팀',      color: 0x1e4d82, hex: '#163c66', x:  -1.5, z: -10.0, w: 12.5, d: 7.5 },
+    ceo:    { title: '👑 대표이사 사장실 (Mid-Century Modern)', color: 0xb45309, hex: '#92400e', x: 12.5, z: -9.5, w: 12.0, d: 8.5, isCeo: true },
+    conf:   { title: '🤝 중앙 대회의실 (Conference Hall)',      color: 0x334155, hex: '#1e293b', x:  0.0, z:  -0.3, w: 14.5, d: 6.8, isConf: true },
+    lm_mkt: { title: '🌸 라머머 마케팅팀',     color: 0xb8883b, hex: '#8c6323', x: -14.2, z:   9.2, w: 8.8,  d: 8.0 },
+    lm_rnd: { title: '🧪 라머머 신제품개발팀', color: 0x9c712b, hex: '#704d16', x:  -4.6, z:   9.2, w: 8.8,  d: 8.0 },
+    mf_mkt: { title: '🔥 마파송 마케팅팀',     color: 0xd94b86, hex: '#b52b65', x:   5.0, z:   9.2, w: 8.8,  d: 8.0 },
+    mf_trd: { title: '🔭 마파송 신제품서칭팀', color: 0xb52b65, hex: '#8f1d4d', x:  14.4, z:   9.2, w: 8.8,  d: 8.0 }
+  };
+
+  // 주요 이동 좌표
+  const SPOTS = {
+    ceoDeskFront:  { x: 14.0, z: -8.2 }, // 한지훈 팀장이 사장실 안 대표님 책상 앞에 서서 독대 보고하는 위치
+    ceoSofaCenter: { x: 10.2, z: -7.8 }, // 사장실 미드센추리 카멜 소파 라운지
+    leaderFront:   { x: -4.8, z: -7.0 }, // 전략기획실 한지훈 팀장 앞 보고 위치
+    confTable:     { x:  0.0, z: -0.3 }, // 정중앙 대회의실 대형 테이블 중심
+    coffeeBar:     { x: -8.2, z: -12.2 },
+    safeSpot:      { x: -17.2, z: -11.5 },
+    jewelryCase1:  { x: -6.2, z: 11.4 },
+    jewelryCase2:  { x: -3.0, z: 11.4 },
+    blingRack:     { x: 14.4, z: 11.4 }
+  };
+
+  // 대표님(CEO) + 13명 에이전트 (총 14명 캐릭터)
+  const AGENTS = [
+    // 👑 대표님 (미드센추리 사장실 상주)
+    { id:'ceo_0', zone:'ceo', name:'대표님', rank:'CEO', gender:'M', isCeo:true, role:'더제이 코퍼레이션 대표이사', x: 14.0, z:-11.5, hair:0x111827, suit:0x78350f, idleMsg:'👑 미드센추리 사장실 집무중', workMsg:'한 팀장, 보고서 올려봐! 👑' },
+
+    // 🎯 총괄전략기획팀 (3명: 남2, 여1)
+    { id:'hq_1', zone:'hq', name:'한지훈', rank:'팀장', gender:'M', isLeader:true, role:'총괄 오케스트레이터', x: -5.2, z:-10.8, hair:0x1f2937, suit:0x1e3a8a, idleMsg:'사장실 직통보고 대기!', workMsg:'대표님께 독대 보고드리러 이동! 📢' },
+    { id:'hq_2', zone:'hq', name:'서유진', rank:'선임', gender:'F', role:'브랜드 시너지·KPI', x: -1.5, z:-10.8, hair:0x5c3a21, suit:0xd97706, idleMsg:'라머머×마파송 KPI 체크', workMsg:'양 브랜드 KPI 취합중! 📈' },
+    { id:'hq_3', zone:'hq', name:'박도현', rank:'매니저', gender:'M', role:'일정·PMO 조율', x:  2.2, z:-10.8, hair:0x374151, suit:0x2563eb, idleMsg:'공구·신상 일정 관리', workMsg:'전사 회의자료 준비! ⏱️' },
+
+    // 💼 관리팀 (2명: 여1, 남1)
+    { id:'adm_1', zone:'adm', name:'김민서', rank:'책임', gender:'F', role:'재무·원가율 통제', x:-15.8, z:-10.8, hair:0x27272a, suit:0x047857, idleMsg:'14K 금시세·원가 체크', workMsg:'손익계산서 들고 이동! 💰' },
+    { id:'adm_2', zone:'adm', name:'이준호', rank:'대리', gender:'M', role:'회계·공구정산', x:-12.0, z:-10.8, hair:0x4b5563, suit:0x10b981, idleMsg:'블링홍 공구 정산 준비', workMsg:'공구 정산서 들고 이동! 🧾' },
+
+    // 🌸 라머머 마케팅팀 (2명: 여1, 남1)
+    { id:'lm_m1', zone:'lm_mkt', name:'최수아', rank:'팀장', gender:'F', role:'파인주얼리 브랜딩', x:-16.0, z: 8.6, hair:0x6b4226, suit:0xb45309, idleMsg:'lamurmur.com 화보 기획', workMsg:'14K 룩북 시안 보고! ✨' },
+    { id:'lm_m2', zone:'lm_mkt', name:'정우진', rank:'매니저', gender:'M', role:'자사몰 퍼포먼스·VIP', x:-12.4, z: 8.6, hair:0x1e293b, suit:0xd97706, idleMsg:'자사몰 전환율 체크', workMsg:'VIP 데이터 보고! 🎯' },
+
+    // 🧪 라머머 신제품개발팀 (2명: 여1, 남1)
+    { id:'lm_r1', zone:'lm_rnd', name:'윤채원', rank:'수석', gender:'F', role:'14K·고급실버 디자인', x: -6.4, z: 8.6, hair:0x3f271d, suit:0x92400e, idleMsg:'14K 시그니처 스케치', workMsg:'14K·925실버 샘플 보고! 💍' },
+    { id:'lm_r2', zone:'lm_rnd', name:'강태윤', rank:'연구원', gender:'M', role:'세공공정·금은원가', x: -2.8, z: 8.6, hair:0x334155, suit:0x78350f, idleMsg:'종로 세공 샘플 검수', workMsg:'세공·원가 스펙서 보고! ⚒️' },
+
+    // 🔥 마파송 마케팅팀 (2명: 남1, 여1)
+    { id:'mf_m1', zone:'mf_mkt', name:'오세훈', rank:'팀장', gender:'M', role:'블링홍 공구(70%) 총괄', x:  3.2, z: 8.6, hair:0x18181b, suit:0xbe185d, idleMsg:'블링홍 공구 스케줄 대기', workMsg:'공구 70% 바이럴안 보고! 🔥' },
+    { id:'mf_m2', zone:'mf_mkt', name:'신예린', rank:'매니저', gender:'F', role:'상시(30%)·라방 소통', x:  6.8, z: 8.6, hair:0x7c2d12, suit:0xec4899, idleMsg:'블링홍 착샷·라방 Q&A', workMsg:'상시 30% 전환안 보고! 🧦' },
+
+    // 🔭 마파송 신제품서칭팀 (2명: 여1, 남1)
+    { id:'mf_t1', zone:'mf_trd', name:'한소희', rank:'팀장', gender:'F', role:'블링홍 사입·트렌드픽', x: 12.6, z: 8.6, hair:0x451a03, suit:0x9d174d, idleMsg:'옷·양말·심플실버 서칭', workMsg:'블링홍 픽 샘플 보고! 👗' },
+    { id:'mf_t2', zone:'mf_trd', name:'송민재', rank:'분석가', gender:'M', role:'공구수요·재고밸런싱', x: 16.2, z: 8.6, hair:0x1f2937, suit:0xdb2777, idleMsg:'공구 완판 수량 예측', workMsg:'공구70:상시30 물량 보고! 📦' }
+  ];
+
+  // =========================================================================
+  // 2. Three.js 3D 씬 초기화 & 미드센추리 사장실 / 중앙 대회의실 구축
+  // =========================================================================
+  let scene, camera, renderer, controls;
+  const agentControllers = {};
+  let targetCamPos = new THREE.Vector3(0, 32, 34);
+  let targetLookAt = new THREE.Vector3(0, 0, 0);
+  let isCameraTransitioning = false;
+  let globalMode = 'autonomous';
+  let vinylDiscMesh = null;
+
+  function init3DOffice() {
+    const container = document.getElementById('canvas3dContainer');
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xcde0f2);
+
+    camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 220);
+    camera.position.set(0, 32, 34);
+
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    container.appendChild(renderer.domElement);
+
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.maxPolarAngle = Math.PI / 2.12;
+    controls.minDistance = 8;
+    controls.maxDistance = 68;
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.72);
+    scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0xfff8e7, 0.85);
+    dirLight.position.set(20, 40, 25);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 2048;
+    dirLight.shadow.mapSize.height = 2048;
+    dirLight.shadow.camera.left = -28;
+    dirLight.shadow.camera.right = 28;
+    dirLight.shadow.camera.top = 24;
+    dirLight.shadow.camera.bottom = -24;
+    scene.add(dirLight);
+
+    buildOfficeArchitecture();
+    buildDepartmentRooms();
+    buildMidCenturyCeoRoom();
+    buildCentralConferenceRoom();
+    buildDesksAndWalkingMinimes();
+    createDOMOverlays();
+
+    setInterval(autonomousLifeTick, 3300);
+
+    window.addEventListener('resize', onWindowResize);
+    animate3D();
+  }
+
+  // 전체 건물 바닥 및 외벽
+  function buildOfficeArchitecture() {
+    const baseMesh = new THREE.Mesh(
+      new THREE.BoxGeometry(40, 0.8, 30),
+      new THREE.MeshStandardMaterial({ color: 0xe3d3bc, roughness: 0.75 })
+    );
+    baseMesh.position.set(0, -0.4, -0.5);
+    baseMesh.receiveShadow = true;
+    scene.add(baseMesh);
+
+    const grid = new THREE.GridHelper(40, 40, 0xb8a386, 0xccb99e);
+    grid.position.set(0, 0.01, -0.5);
+    grid.scale.z = 30 / 40;
+    scene.add(grid);
+
+    const wallMat = new THREE.MeshStandardMaterial({ color: 0xd8e6f3, roughness: 0.6 });
+    const backWall = new THREE.Mesh(new THREE.BoxGeometry(40, 6.8, 0.6), wallMat);
+    backWall.position.set(0, 3.4, -15.2);
+    backWall.receiveShadow = true;
+    scene.add(backWall);
+
+    const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.6, 6.8, 30), wallMat);
+    leftWall.position.set(-19.8, 3.4, -0.5);
+    leftWall.receiveShadow = true;
+    scene.add(leftWall);
+
+    // 창문 2개
+    const winGlassMat = new THREE.MeshBasicMaterial({ color: 0x87cefa });
+    const winFrameMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+    [-12.5, 12.5].forEach(wx => {
+      const frame = new THREE.Mesh(new THREE.BoxGeometry(7.8, 3.4, 0.2), winFrameMat);
+      frame.position.set(wx, 4.0, -14.85);
+      scene.add(frame);
+      const glass = new THREE.Mesh(new THREE.BoxGeometry(7.2, 2.8, 0.25), winGlassMat);
+      glass.position.set(wx, 4.0, -14.83);
+      scene.add(glass);
+    });
+
+    // 중앙 현판
+    const signBoard = new THREE.Mesh(
+      new THREE.BoxGeometry(9.2, 2.1, 0.35),
+      new THREE.MeshStandardMaterial({ color: 0x162436, metalness: 0.3, roughness: 0.4 })
+    );
+    signBoard.position.set(-1.5, 4.5, -14.8);
+    scene.add(signBoard);
+  }
+
+  // =========================================================================
+  // 👑 미드센추리 모던(Mid-Century Modern) 대표이사 사장실 디테일 구현
+  // =========================================================================
+  function buildMidCenturyCeoRoom() {
+    const z = ZONES_3D.ceo; // x: 12.5, z: -9.5, w: 12.0, d: 8.5
+
+    // 1. 미드센추리 특유의 웜 월넛 헤링본 우드 플로어 + 크림&올리브 체커보드 포인트 러그
+    const walnutFloor = new THREE.Mesh(
+      new THREE.BoxGeometry(z.w, 0.14, z.d),
+      new THREE.MeshStandardMaterial({ color: 0x6e472b, roughness: 0.55 })
+    );
+    walnutFloor.position.set(z.x, 0.07, z.z);
+    walnutFloor.receiveShadow = true;
+    scene.add(walnutFloor);
+
+    // 미드센추리 체커보드 러그 (크림 화이트 & 테라코타/올리브그린 타일 조합)
+    const rugGroup = new THREE.Group();
+    const tileColors = [0xfdf6e2, 0x2f5233, 0xd97724];
+    for (let ix = 0; ix < 5; ix++) {
+      for (let iz = 0; iz < 4; iz++) {
+        const c = (ix + iz) % 2 === 0 ? tileColors[0] : ((ix % 2 === 0) ? tileColors[1] : tileColors[2]);
+        const tile = new THREE.Mesh(
+          new THREE.BoxGeometry(1.1, 0.04, 1.1),
+          new THREE.MeshStandardMaterial({ color: c, roughness: 0.85 })
+        );
+        tile.position.set(9.2 + ix * 1.1, 0.16, -9.8 + iz * 1.1);
+        rugGroup.add(tile);
+      }
+    }
+    scene.add(rugGroup);
+
+    // 2. 미드센추리 우드 템바보드(루버) 뒷벽 & 블랙 프레임 유리 파티션
+    const woodWall = new THREE.Mesh(
+      new THREE.BoxGeometry(z.w, 3.8, 0.25),
+      new THREE.MeshStandardMaterial({ color: 0x5c3a21, roughness: 0.5 })
+    );
+    woodWall.position.set(z.x, 1.9, z.z - z.d / 2);
+    scene.add(woodWall);
+
+    // 벽면 바우하우스 기하학 추상화 아트 액자 2점 (오렌지·머스타드·딥블루)
+    const art1 = new THREE.Mesh(
+      new THREE.BoxGeometry(2.2, 1.8, 0.12),
+      new THREE.MeshStandardMaterial({ color: 0xf4ede2 })
+    );
+    art1.position.set(9.5, 2.4, z.z - z.d / 2 + 0.18);
+    scene.add(art1);
+    const artCircle = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.55, 0.55, 0.15, 20),
+      new THREE.MeshBasicMaterial({ color: 0xe05a2b })
+    );
+    artCircle.rotation.x = Math.PI / 2;
+    artCircle.position.set(9.5, 2.4, z.z - z.d / 2 + 0.2);
+    scene.add(artCircle);
+
+    // 블랙 아이언 & 브론즈 유리 파티션 (사장실 좌측/전면 일부)
+    const bronzeGlass = new THREE.MeshPhysicalMaterial({
+      color: 0xffe4c4, transparent: true, opacity: 0.35, roughness: 0.1
+    });
+    const blackFrame = new THREE.MeshStandardMaterial({ color: 0x18181b, metalness: 0.7, roughness: 0.3 });
+
+    const leftGlass = new THREE.Mesh(new THREE.BoxGeometry(0.18, 2.8, z.d * 0.65), bronzeGlass);
+    leftGlass.position.set(z.x - z.w / 2, 1.4, z.z - 1.2);
+    scene.add(leftGlass);
+    const leftTopBar = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.16, z.d * 0.65), blackFrame);
+    leftTopBar.position.set(z.x - z.w / 2, 2.8, z.z - 1.2);
+    scene.add(leftTopBar);
+
+    // 3. 대표님 전용 미드센추리 월넛 & 크롬 이그제큐티브 데스크 (우측 안쪽)
+    const ceoDeskTop = new THREE.Mesh(
+      new THREE.BoxGeometry(3.4, 0.18, 1.6),
+      new THREE.MeshStandardMaterial({ color: 0x4a2c18, roughness: 0.35 })
+    );
+    ceoDeskTop.position.set(14.0, 1.3, -10.3);
+    ceoDeskTop.castShadow = true;
+    scene.add(ceoDeskTop);
+
+    // 바우하우스 크롬 튜브 다리 (실버 메탈)
+    const chromeMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.9, roughness: 0.15 });
+    [-1.4, 1.4].forEach(dx => {
+      const cLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 1.3, 12), chromeMat);
+      cLeg.position.set(14.0 + dx, 0.65, -10.3);
+      scene.add(cLeg);
+    });
+
+    // 책상 위 아이코닉 오렌지 머쉬룸 램프 (아르떼미데 네시노 스타일) + 맥북
+    const lampStem = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.08, 0.16, 0.38, 12),
+      new THREE.MeshStandardMaterial({ color: 0xff5500, roughness: 0.2 })
+    );
+    lampStem.position.set(12.8, 1.55, -10.1);
+    scene.add(lampStem);
+    const lampDome = new THREE.Mesh(
+      new THREE.SphereGeometry(0.32, 16, 12, 0, Math.PI * 2, 0, Math.PI * 0.6),
+      new THREE.MeshStandardMaterial({ color: 0xff5500, emissive: 0xff4400, emissiveIntensity: 0.35 })
+    );
+    lampDome.position.set(12.8, 1.68, -10.1);
+    scene.add(lampDome);
+
+    // 사장실 포인트 조명 (따뜻한 오렌지/앰버 무드광)
+    const ceoWarmLight = new THREE.PointLight(0xffa94d, 0.65, 14);
+    ceoWarmLight.position.set(12.5, 4.2, -9.5);
+    scene.add(ceoWarmLight);
+
+    // 대표님 임원용 임스(Eames) 월넛&블랙 라운지 체어
+    const ceoChairSeat = new THREE.Mesh(
+      new THREE.BoxGeometry(1.15, 0.18, 1.1),
+      new THREE.MeshStandardMaterial({ color: 0x1c1917 })
+    );
+    ceoChairSeat.position.set(14.0, 0.85, -11.7);
+    scene.add(ceoChairSeat);
+    const ceoChairBack = new THREE.Mesh(
+      new THREE.BoxGeometry(1.15, 1.45, 0.2),
+      new THREE.MeshStandardMaterial({ color: 0x4a2c18 })
+    );
+    ceoChairBack.position.set(14.0, 1.55, -12.2);
+    scene.add(ceoChairBack);
+
+    // 4. 미드센추리 카멜 브라운 가죽 소파 & 유리/크롬 커피테이블 (사장실 좌측 응접 존)
+    const camelLeatherMat = new THREE.MeshStandardMaterial({ color: 0xc87533, roughness: 0.45 });
+    const sofaBase = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.55, 1.25), camelLeatherMat);
+    sofaBase.position.set(9.6, 0.45, -11.2);
+    sofaBase.castShadow = true;
+    scene.add(sofaBase);
+    const sofaBack = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.85, 0.35), camelLeatherMat);
+    sofaBack.position.set(9.6, 0.95, -11.7);
+    sofaBack.castShadow = true;
+    scene.add(sofaBack);
+
+    // 유리 & 크롬 소파 테이블
+    const glassTable = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.95, 0.95, 0.08, 24),
+      new THREE.MeshPhysicalMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.65 })
+    );
+    glassTable.position.set(9.6, 0.72, -9.3);
+    scene.add(glassTable);
+    const glassBase = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.7, 16), chromeMat);
+    glassBase.position.set(9.6, 0.35, -9.3);
+    scene.add(glassBase);
+
+    // 5. 빈티지 LP 바이닐 턴테이블 크레덴자(수납장) & 몬스테라 화분
+    const credenza = new THREE.Mesh(
+      new THREE.BoxGeometry(2.2, 1.0, 0.9),
+      new THREE.MeshStandardMaterial({ color: 0x5c3a21 })
+    );
+    credenza.position.set(17.2, 0.6, -7.2);
+    credenza.castShadow = true;
+    scene.add(credenza);
+
+    vinylDiscMesh = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.35, 0.35, 0.05, 20),
+      new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2 })
+    );
+    vinylDiscMesh.position.set(17.2, 1.15, -7.2);
+    scene.add(vinylDiscMesh);
+  }
+
+  // =========================================================================
+  // 🤝 오피스 정중앙 대회의실 (Central Glass Boardroom) 구현
+  // =========================================================================
+  function buildCentralConferenceRoom() {
+    const z = ZONES_3D.conf; // x: 0.0, z: -0.3, w: 14.5, d: 6.8
+
+    // 대회의실 네이비/차콜 고급 카펫
+    const confCarpet = new THREE.Mesh(
+      new THREE.BoxGeometry(z.w, 0.12, z.d),
+      new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.85 })
+    );
+    confCarpet.position.set(z.x, 0.06, z.z);
+    confCarpet.receiveShadow = true;
+    scene.add(confCarpet);
+
+    const innerCarpet = new THREE.Mesh(
+      new THREE.BoxGeometry(z.w - 0.6, 0.14, z.d - 0.6),
+      new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.85 })
+    );
+    innerCarpet.position.set(z.x, 0.07, z.z);
+    scene.add(innerCarpet);
+
+    // 14인용 대형 우드슬랩 컨퍼런스 보드 테이블 (정중앙)
+    const boardTable = new THREE.Mesh(
+      new THREE.BoxGeometry(8.8, 0.2, 2.8),
+      new THREE.MeshStandardMaterial({ color: 0xd4a373, roughness: 0.35 })
+    );
+    boardTable.position.set(0.0, 1.2, -0.3);
+    boardTable.castShadow = true;
+    boardTable.receiveShadow = true;
+    scene.add(boardTable);
+
+    // 회의 테이블 중앙 무선 마이크/프로젝터 독
+    const centerHub = new THREE.Mesh(
+      new THREE.BoxGeometry(3.6, 0.06, 0.5),
+      new THREE.MeshStandardMaterial({ color: 0x0f172a })
+    );
+    centerHub.position.set(0.0, 1.32, -0.3);
+    scene.add(centerHub);
+
+    [-2.8, 0, 2.8].forEach(tx => {
+      const pillar = new THREE.Mesh(
+        new THREE.BoxGeometry(0.4, 1.2, 1.4),
+        new THREE.MeshStandardMaterial({ color: 0x1e293b })
+      );
+      pillar.position.set(tx, 0.6, -0.3);
+      scene.add(pillar);
+    });
+
+    // 회의실 양쪽 유리 가벽 (남/북 통로는 활짝 열려 있어 전 부서 미니미가 자유롭게 출입)
+    const glassMat = new THREE.MeshPhysicalMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.35 });
+    [-z.w / 2, z.w / 2].forEach(gx => {
+      const gWall = new THREE.Mesh(new THREE.BoxGeometry(0.16, 2.3, z.d * 0.7), glassMat);
+      gWall.position.set(gx, 1.15, z.z);
+      scene.add(gWall);
+    });
+  }
+
+  // 일반 5개 부서 룸 & 쇼케이스/행거/금고 배치
+  function buildDepartmentRooms() {
+    const glassMat = new THREE.MeshPhysicalMaterial({ color: 0xdaf0ff, transparent: true, opacity: 0.38, roughness: 0.15 });
+    const frameMat = new THREE.MeshStandardMaterial({ color: 0x5c768d });
+
+    Object.entries(ZONES_3D).forEach(([key, z]) => {
+      if (z.isCeo || z.isConf) return;
+
+      const rug = new THREE.Mesh(
+        new THREE.BoxGeometry(z.w, 0.1, z.d),
+        new THREE.MeshStandardMaterial({ color: z.color, roughness: 0.85 })
+      );
+      rug.position.set(z.x, 0.05, z.z);
+      rug.receiveShadow = true;
+      scene.add(rug);
+
+      const innerRug = new THREE.Mesh(
+        new THREE.BoxGeometry(z.w - 0.5, 0.12, z.d - 0.5),
+        new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.9 })
+      );
+      innerRug.position.set(z.x, 0.06, z.z);
+      innerRug.receiveShadow = true;
+      scene.add(innerRug);
+
+      const backPart = new THREE.Mesh(new THREE.BoxGeometry(z.w, 2.1, 0.15), glassMat);
+      backPart.position.set(z.x, 1.05, z.z - z.d / 2);
+      scene.add(backPart);
+    });
+
+    // [관리팀] 철제 금고
+    const safeBox = new THREE.Mesh(
+      new THREE.BoxGeometry(1.6, 2.3, 1.1),
+      new THREE.MeshStandardMaterial({ color: 0x374151, metalness: 0.5, roughness: 0.4 })
+    );
+    safeBox.position.set(-17.5, 1.15, -12.5);
+    safeBox.castShadow = true;
+    scene.add(safeBox);
+
+    // [라머머] 14K & 고급실버 유리 쇼케이스 2대
+    [-6.2, -3.0].forEach(sx => {
+      const ped = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.2, 0.95), new THREE.MeshStandardMaterial({ color: 0xc89d54 }));
+      ped.position.set(sx, 0.6, 12.2);
+      ped.castShadow = true;
+      scene.add(ped);
+
+      const caseGlass = new THREE.Mesh(
+        new THREE.BoxGeometry(1.4, 0.85, 0.85),
+        new THREE.MeshPhysicalMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 })
+      );
+      caseGlass.position.set(sx, 1.6, 12.2);
+      scene.add(caseGlass);
+
+      const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(0.22, 0.055, 10, 20),
+        new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.85, roughness: 0.15 })
+      );
+      ring.position.set(sx, 1.52, 12.2);
+      ring.rotation.x = Math.PI / 3;
+      scene.add(ring);
+    });
+
+    // [마파송] 블링홍 피팅 의류 행거
+    const rackBar = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 3.2), frameMat);
+    rackBar.rotation.z = Math.PI / 2;
+    rackBar.position.set(14.4, 2.1, 12.2);
+    scene.add(rackBar);
+    [12.9, 15.9].forEach(rx => {
+      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 2.2), frameMat);
+      pole.position.set(rx, 1.1, 12.2);
+      scene.add(pole);
+    });
+    [0xff80ab, 0xfff59d, 0x80d8ff, 0xb388ff, 0xa7ffeb].forEach((c, idx) => {
+      const cloth = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1.1, 0.6), new THREE.MeshStandardMaterial({ color: c }));
+      cloth.position.set(13.3 + idx * 0.55, 1.4, 12.2);
+      cloth.castShadow = true;
+      scene.add(cloth);
+    });
+  }
+
+  // 13개 직원 책상 + 대표님 및 13명 보행 가능 3D 미니미 생성
+  function buildDesksAndWalkingMinimes() {
+    const deskTopMat = new THREE.MeshStandardMaterial({ color: 0xdebd96, roughness: 0.55 });
+    const deskLegMat = new THREE.MeshStandardMaterial({ color: 0x475569 });
+    const chairMat = new THREE.MeshStandardMaterial({ color: 0x1e293b });
+    const leaderChairMat = new THREE.MeshStandardMaterial({ color: 0x9a3412 });
+    const monitorMat = new THREE.MeshStandardMaterial({ color: 0x0f172a });
+    const screenGlowMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+
+    AGENTS.forEach(agent => {
+      // 대표님(ceo_0)은 이미 buildMidCenturyCeoRoom()에서 전용 미드센추리 월넛&크롬 데스크를 만들었으므로 일반 책상 생략
+      if (!agent.isCeo) {
+        const furnitureGroup = new THREE.Group();
+        furnitureGroup.position.set(agent.x, 0, agent.z);
+
+        const top = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.16, 1.25), deskTopMat);
+        top.position.set(0, 1.25, 0.8);
+        top.castShadow = true;
+        furnitureGroup.add(top);
+
+        [-1.0, 1.0].forEach(lx => {
+          const leg = new THREE.Mesh(new THREE.BoxGeometry(0.16, 1.25, 1.05), deskLegMat);
+          leg.position.set(lx, 0.625, 0.8);
+          leg.castShadow = true;
+          furnitureGroup.add(leg);
+        });
+
+        const monBody = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.66, 0.1), monitorMat);
+        monBody.position.set(0, 1.72, 0.95);
+        furnitureGroup.add(monBody);
+
+        const screen = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.56, 0.12), screenGlowMat.clone());
+        screen.position.set(0, 1.72, 0.94);
+        furnitureGroup.add(screen);
+
+        const cMat = agent.isLeader ? leaderChairMat : chairMat;
+        const seat = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.12, 0.85), cMat);
+        seat.position.set(0, 0.75, -0.25);
+        furnitureGroup.add(seat);
+
+        const backRest = new THREE.Mesh(new THREE.BoxGeometry(0.85, 1.05, 0.14), cMat);
+        backRest.position.set(0, 1.28, -0.65);
+        furnitureGroup.add(backRest);
+
+        scene.add(furnitureGroup);
+      }
+
+      // 걸어 다니는 3D 미니미 생성
+      const charObj = createWalkingVoxelMinime(agent);
+      charObj.root.position.set(agent.x, 0, agent.z - 0.15);
+      scene.add(charObj.root);
+
+      agentControllers[agent.id] = {
+        agent: agent,
+        root: charObj.root,
+        leftLeg: charObj.leftLeg,
+        rightLeg: charObj.rightLeg,
+        leftArm: charObj.leftArm,
+        rightArm: charObj.rightArm,
+        reportDoc: charObj.reportDoc,
+        homePos: new THREE.Vector3(agent.x, 0, agent.z - 0.15),
+        targetPos: new THREE.Vector3(agent.x, 0, agent.z - 0.15),
+        lookAtPos: new THREE.Vector3(agent.x, 0, agent.z + 3),
+        speed: 6.2 + Math.random() * 1.2,
+        state: 'desk',
+        walkPhase: Math.random() * 10
+      };
+    });
+  }
+
+  function createWalkingVoxelMinime(agent) {
+    const root = new THREE.Group();
+    const skinMat = new THREE.MeshStandardMaterial({ color: 0xffe0bd, roughness: 0.5 });
+    const hairMat = new THREE.MeshStandardMaterial({ color: agent.hair, roughness: 0.6 });
+    const suitMat = new THREE.MeshStandardMaterial({ color: agent.suit, roughness: 0.5 });
+    const pantsMat = new THREE.MeshStandardMaterial({ color: agent.gender === 'F' ? 0x334155 : 0x1e293b });
+
+    const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.72, 0.34), pantsMat);
+    leftLeg.position.set(-0.2, 0.36, 0);
+    leftLeg.castShadow = true;
+    root.add(leftLeg);
+
+    const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.72, 0.34), pantsMat);
+    rightLeg.position.set(0.2, 0.36, 0);
+    rightLeg.castShadow = true;
+    root.add(rightLeg);
+
+    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.88, 0.46), suitMat);
+    torso.position.y = 1.12;
+    torso.castShadow = true;
+    root.add(torso);
+
+    const tieColor = agent.isCeo ? 0xfbbf24 : (agent.isLeader ? 0xff6600 : 0xffffff);
+    const tie = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.45, 0.48), new THREE.MeshStandardMaterial({ color: tieColor }));
+    tie.position.y = 1.2;
+    root.add(tie);
+
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.86, 0.82, 0.82), skinMat);
+    head.position.y = 1.98;
+    head.castShadow = true;
+    root.add(head);
+
+    const hairTop = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.32, 0.88), hairMat);
+    hairTop.position.set(0, 2.32, 0);
+    root.add(hairTop);
+
+    // 대표님(CEO) 골드 크라운 포인트
+    if (agent.isCeo) {
+      const crown = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.32, 0.26, 0.25, 6),
+        new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8, roughness: 0.2 })
+      );
+      crown.position.set(0, 2.6, 0);
+      root.add(crown);
+    }
+
+    const hairBackH = agent.gender === 'F' ? 0.95 : 0.55;
+    const hairBack = new THREE.Mesh(new THREE.BoxGeometry(0.92, hairBackH, 0.25), hairMat);
+    hairBack.position.set(0, 2.0, -0.35);
+    root.add(hairBack);
+
+    if (agent.gender === 'F') {
+      [-0.44, 0.44].forEach(hx => {
+        const sideHair = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.75, 0.65), hairMat);
+        sideHair.position.set(hx, 1.9, -0.05);
+        root.add(sideHair);
+      });
+    }
+
+    const eyeMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+    [-0.2, 0.2].forEach(ex => {
+      const eye = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.13, 0.05), eyeMat);
+      eye.position.set(ex, 1.98, 0.42);
+      root.add(eye);
+    });
+    const blushMat = new THREE.MeshBasicMaterial({ color: 0xff8da1 });
+    [-0.28, 0.28].forEach(bx => {
+      const blush = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.07, 0.05), blushMat);
+      blush.position.set(bx, 1.86, 0.42);
+      root.add(blush);
+    });
+
+    const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.68, 0.24), suitMat);
+    leftArm.position.set(-0.52, 1.15, 0.1);
+    leftArm.castShadow = true;
+    root.add(leftArm);
+
+    const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.68, 0.24), suitMat);
+    rightArm.position.set(0.52, 1.15, 0.1);
+    rightArm.castShadow = true;
+    root.add(rightArm);
+
+    const reportDoc = new THREE.Mesh(
+      new THREE.BoxGeometry(0.55, 0.68, 0.08),
+      new THREE.MeshBasicMaterial({ color: 0xfffbeb })
+    );
+    reportDoc.position.set(0.52, 1.25, 0.45);
+    reportDoc.visible = false;
+    root.add(reportDoc);
+
+    return { root, leftLeg, rightLeg, leftArm, rightArm, reportDoc };
+  }
+
+  // =========================================================================
+  // 3. 평상시 자율 이동 (사장님 소파 산책, 직원들 쇼케이스·행거·중앙회의실·팀장보고)
+  // =========================================================================
+  function autonomousLifeTick() {
+    if (globalMode !== 'autonomous') return;
+
+    // 대표님(ceo_0)도 가끔 미드센추리 카멜 소파나 LP 턴테이블 앞으로 걸어가서 커피를 마심
+    if (Math.random() < 0.28) {
+      const ceoCtrl = agentControllers['ceo_0'];
+      if (ceoCtrl.state === 'desk') {
+        ceoCtrl.targetPos.set(9.6, 0, -9.8);
+        ceoCtrl.lookAtPos.set(9.6, 0, -7.0);
+        ceoCtrl.state = 'inspecting';
+        setBubbleText('ceo_0', '☕ 미드센추리 라운지 소파에서 LP 음악 감상중~', false);
+      } else {
+        sendAgentToDesk('ceo_0');
+      }
+    }
+
+    const candidates = AGENTS.filter(a => !a.isLeader && !a.isCeo);
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+    const ctrl = agentControllers[pick.id];
+    if (!ctrl) return;
+
+    if (ctrl.state !== 'desk') {
+      sendAgentToDesk(pick.id);
+      return;
+    }
+
+    const r = Math.random();
+    let dest, look, msg;
+
+    if (pick.zone === 'lm_rnd' && r < 0.5) {
+      dest = new THREE.Vector3(pick.id === 'lm_r1' ? -6.2 : -3.0, 0, 10.8);
+      look = new THREE.Vector3(dest.x, 0, 12.5);
+      msg = '💎 14K·925실버 쇼케이스 보석 검수중!';
+    } else if (pick.zone === 'mf_trd' && r < 0.5) {
+      dest = new THREE.Vector3(14.4 + (Math.random() - 0.5) * 2, 0, 10.8);
+      look = new THREE.Vector3(14.4, 0, 12.5);
+      msg = '👗 블링홍 공구 의류·양말 행거 체크중!';
+    } else if (r < 0.4) {
+      // 한지훈 팀장 자리로 걸어가 중간보고
+      dest = new THREE.Vector3(-5.2 + (Math.random() - 0.5) * 1.6, 0, -7.2);
+      look = new THREE.Vector3(-5.2, 0, -10.8);
+      msg = `📑 한지훈 팀장님께 ${pick.role} 중간보고!`;
+      ctrl.reportDoc.visible = true;
+    } else {
+      // 정중앙 대회의실 화이트보드 점검
+      dest = new THREE.Vector3((Math.random() - 0.5) * 6, 0, -2.2);
+      look = new THREE.Vector3(0, 0, -0.3);
+      msg = '🤝 중앙 대회의실 자료 세팅중!';
+    }
+
+    ctrl.targetPos.copy(dest);
+    ctrl.lookAtPos.copy(look);
+    ctrl.state = 'inspecting';
+    setBubbleText(pick.id, msg, false);
+  }
+
+  function sendAgentToDesk(agentId) {
+    const ctrl = agentControllers[agentId];
+    if (!ctrl) return;
+    ctrl.targetPos.copy(ctrl.homePos);
+    ctrl.lookAtPos.set(ctrl.agent.x, 0, ctrl.agent.z + 3);
+    ctrl.state = 'desk';
+    ctrl.reportDoc.visible = false;
+    setBubbleText(agentId, ctrl.agent.idleMsg, false);
+  }
+
+  // =========================================================================
+  // 4. 핵심 오피스 동선 연출 (중앙 대회의실 소집 / 팀장 앞 보고 / 사장실 독대 보고)
+  // =========================================================================
+
+  // [동선 1] 한지훈 총괄전략기획팀장이 결재판을 들고 미드센추리 사장실로 걸어 들어가 대표님 책상 앞에서 독대 보고!
+  function triggerCeoDirectReport(callback) {
+    globalMode = 'reporting';
+
+    // 대표님은 사장실 월넛 데스크 정위치
+    sendAgentToDesk('ceo_0');
+    setBubbleText('ceo_0', '👑 한 팀장, 들어와서 보고해봐!', true);
+
+    // 한지훈 팀장이 전략기획실에서 나와 사장실 안 대표님 책상 앞(14.0, -8.2)으로 걸어 들어감
+    const leaderCtrl = agentControllers['hq_1'];
+    leaderCtrl.targetPos.set(SPOTS.ceoDeskFront.x, 0, SPOTS.ceoDeskFront.z);
+    leaderCtrl.lookAtPos.set(14.0, 0, -11.5); // 대표님을 정면으로 바라봄
+    leaderCtrl.state = 'reporting';
+    leaderCtrl.reportDoc.visible = true;
+    setBubbleText('hq_1', '🫡 대표님! 전 부서 취합 보고서 가지고 입실했습니다!', true);
+
+    // 서유진 선임도 사장실 입구 소파 쪽까지 동행 수행
+    const subCtrl = agentControllers['hq_2'];
+    subCtrl.targetPos.set(11.2, 0, -8.2);
+    subCtrl.lookAtPos.set(14.0, 0, -11.5);
+    subCtrl.state = 'reporting';
+    subCtrl.reportDoc.visible = true;
+    setBubbleText('hq_2', '📊 KPI 부속자료 수행 대기중!', false);
+
+    // 카메라를 미드센추리 사장실로 클로즈업
+    focusCameraZone('ceo');
+
+    addIlchonLog('👑 사장실독대', '#d97706', `<strong>한지훈 총괄전략기획팀장</strong>이 결재 서류를 들고 <strong>미드센추리 사장실</strong>로 걸어 들어가 대표님께 단독 대면 보고를 올립니다!`);
+
+    if (callback) setTimeout(callback, 2300);
+  }
+
+  // [동선 2] 정중앙 대회의실(Central Conference Hall)로 전 부서 13명 소집 회의!
+  function triggerCenterMeeting(callback) {
+    globalMode = 'meeting';
+    const badge = document.getElementById('flowBadge');
+    badge.className = 'flow-status-badge working';
+    badge.innerText = '🟠 정중앙 대회의실로 전 직원 이동 및 전체 회의 진행중...';
+
+    const staff = AGENTS.filter(a => !a.isCeo);
+    // 중앙 대회의실 긴 우드슬랩 테이블(x: -4.2 ~ +4.2, z: -2.3 / +1.7) 둘레에 북쪽 6명, 남쪽 6명, 상석(서쪽) 한지훈 팀장 배치
+    staff.forEach((a, idx) => {
+      const ctrl = agentControllers[a.id];
+      let tx, tz;
+      if (a.isLeader) {
+        // 한지훈 팀장은 회의 테이블 상석(서쪽 헤드)
+        tx = -5.2;
+        tz = -0.3;
+      } else {
+        const seatIdx = idx - 1;
+        const isNorth = seatIdx < 6;
+        const col = seatIdx % 6;
+        tx = -3.5 + col * 1.45;
+        tz = isNorth ? -2.35 : 1.75;
+      }
+
+      ctrl.targetPos.set(tx, 0, tz);
+      ctrl.lookAtPos.set(0, 0, -0.3); // 회의 테이블 중앙을 바라봄
+      ctrl.state = 'meeting';
+      ctrl.reportDoc.visible = true;
+      setBubbleText(a.id, a.isLeader ? '📢 중앙 대회의실 전사 회의 주재중!' : `📑 ${a.name} 회의 발언 대기!`, true);
+    });
+
+    focusCameraZone('conf');
+    addIlchonLog('🤝 중앙대회의실', '#ff6600', `오피스 정중앙 <strong>대회의실</strong>로 6개 부서 13명 전원이 걸어와 대형 테이블에 둘러앉았습니다!`);
+
+    if (callback) setTimeout(callback, 2600);
+  }
+
+  // [동선 3] 담당 부서원들이 한지훈 팀장 책상 앞으로 걸어가 보고
+  function triggerTeamToLeaderReport(agentIds, callback) {
+    globalMode = 'reporting';
+    const list = agentIds || ['adm_1', 'lm_m1', 'lm_r1', 'mf_m1', 'mf_t1'];
+
+    const leaderCtrl = agentControllers['hq_1'];
+    leaderCtrl.targetPos.copy(leaderCtrl.homePos);
+    leaderCtrl.lookAtPos.set(-5.2, 0, -6.0);
+    setBubbleText('hq_1', '📢 각 팀 보고서 순서대로 브리핑하세요!', true);
+
+    AGENTS.forEach(a => {
+      if (!a.isCeo && a.id !== 'hq_1' && !list.includes(a.id)) {
+        sendAgentToDesk(a.id);
+      }
+    });
+
+    list.forEach((id, idx) => {
+      const ctrl = agentControllers[id];
+      if (!ctrl) return;
+      const offsetX = (idx - (list.length - 1) / 2) * 1.45;
+      ctrl.targetPos.set(-4.5 + offsetX, 0, -7.0);
+      ctrl.lookAtPos.set(-5.2, 0, -10.8);
+      ctrl.state = 'reporting';
+      ctrl.reportDoc.visible = true;
+      setBubbleText(id, ctrl.agent.workMsg, true);
+    });
+
+    focusCameraZone('hq');
+    if (callback) setTimeout(callback, 2200);
+  }
+
+  function triggerReturnToDesks() {
+    globalMode = 'autonomous';
+    AGENTS.forEach(a => sendAgentToDesk(a.id));
+    focusCameraZone('all');
+    const badge = document.getElementById('flowBadge');
+    badge.className = 'flow-status-badge';
+    badge.innerText = '🟢 전원 각자 부서 책상 복귀 & 자율 근무중';
+    addIlchonLog('🪑 좌석복귀', '#1b4979', `전 직원이 보고 및 회의를 마치고 각 부서 책상으로 걸어서 복귀합니다.`);
+  }
+
+  // =========================================================================
+  // 5. 3D 애니메이션 루프
+  // =========================================================================
+  const clock = new THREE.Clock();
+
+  function animate3D() {
+    requestAnimationFrame(animate3D);
+    const dt = Math.min(clock.getDelta(), 0.1);
+    const elapsed = clock.getElapsedTime();
+
+    if (vinylDiscMesh) {
+      vinylDiscMesh.rotation.y += dt * 1.8;
+    }
+
+    if (isCameraTransitioning) {
+      camera.position.lerp(targetCamPos, 0.07);
+      controls.target.lerp(targetLookAt, 0.07);
+      if (camera.position.distanceTo(targetCamPos) < 0.2) {
+        isCameraTransitioning = false;
+      }
+    }
+
+    Object.values(agentControllers).forEach((ctrl, idx) => {
+      const pos = ctrl.root.position;
+      const dist = pos.distanceTo(ctrl.targetPos);
+
+      if (dist > 0.12) {
+        const dir = new THREE.Vector3().subVectors(ctrl.targetPos, pos).normalize();
+        const step = Math.min(dist, ctrl.speed * dt);
+        pos.addScaledVector(dir, step);
+
+        ctrl.root.rotation.y = Math.atan2(dir.x, dir.z);
+
+        ctrl.walkPhase += dt * 16;
+        const swing = Math.sin(ctrl.walkPhase) * 0.65;
+        ctrl.leftLeg.rotation.x = swing;
+        ctrl.rightLeg.rotation.x = -swing;
+        ctrl.leftArm.rotation.x = -swing * 0.8;
+        ctrl.rightArm.rotation.x = ctrl.reportDoc.visible ? -0.6 : swing * 0.8;
+        ctrl.root.position.y = Math.abs(Math.sin(ctrl.walkPhase)) * 0.16;
+      } else {
+        pos.x = ctrl.targetPos.x;
+        pos.z = ctrl.targetPos.z;
+        const lookDir = new THREE.Vector3().subVectors(ctrl.lookAtPos, pos);
+        if (lookDir.lengthSq() > 0.01) {
+          ctrl.root.rotation.y = Math.atan2(lookDir.x, lookDir.z);
+        }
+
+        ctrl.leftLeg.rotation.x = 0;
+        ctrl.rightLeg.rotation.x = 0;
+
+        if (ctrl.state === 'reporting' || ctrl.state === 'meeting') {
+          ctrl.root.position.y = Math.abs(Math.sin(elapsed * 6 + idx)) * 0.12;
+          ctrl.leftArm.rotation.x = Math.sin(elapsed * 8 + idx) * 0.35 - 0.3;
+          ctrl.rightArm.rotation.x = -0.7;
+        } else {
+          ctrl.root.position.y = Math.sin(elapsed * 2.5 + idx) * 0.03;
+          ctrl.leftArm.rotation.x = -0.45 + Math.sin(elapsed * 7 + idx) * 0.1;
+          ctrl.rightArm.rotation.x = -0.45 - Math.sin(elapsed * 7 + idx) * 0.1;
+        }
+      }
+    });
+
+    controls.update();
+    renderer.render(scene, camera);
+    updateLabelsProjection();
+  }
+
+  // =========================================================================
+  // 6. HTML 오버레이 말풍선 & 카메라 포커싱
+  // =========================================================================
+  const labelElements = {};
+  const zoneBannerElements = {};
+
+  function createDOMOverlays() {
+    const overlay = document.getElementById('labelsOverlay');
+    overlay.innerHTML = '';
+
+    Object.entries(ZONES_3D).forEach(([key, z]) => {
+      const banner = document.createElement('div');
+      banner.className = 'zone-banner-3d';
+      banner.style.background = z.hex;
+      banner.innerText = z.title;
+      overlay.appendChild(banner);
+      zoneBannerElements[key] = banner;
+    });
+
+    AGENTS.forEach(agent => {
+      const el = document.createElement('div');
+      el.className = `label-3d ${agent.isCeo ? 'ceo' : (agent.isLeader ? 'leader' : '')}`;
+      el.onclick = () => inspectAgent3D(agent);
+      el.innerHTML = `
+        <div class="bubble-3d" id="bubble-${agent.id}">${agent.idleMsg}</div>
+        <div class="nameplate-3d">
+          ${agent.isCeo ? '👑' : `<span class="${agent.gender === 'M' ? 'gender-m' : 'gender-f'}">${agent.gender === 'M' ? '♂' : '♀'}</span>`}
+          ${agent.name} ${agent.rank}
+        </div>
+      `;
+      overlay.appendChild(el);
+      labelElements[agent.id] = el;
+    });
+  }
+
+  function setBubbleText(agentId, text, isWorking) {
+    const bubble = document.getElementById(`bubble-${agentId}`);
+    const label = labelElements[agentId];
+    if (bubble) bubble.innerText = text;
+    if (label) {
+      if (isWorking) label.classList.add('working');
+      else label.classList.remove('working');
+    }
+  }
+
+  function updateLabelsProjection() {
+    const container = document.getElementById('canvas3dContainer');
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+
+    Object.entries(ZONES_3D).forEach(([key, z]) => {
+      const vec = new THREE.Vector3(z.x, 2.5, z.z - z.d / 2);
+      vec.project(camera);
+      zoneBannerElements[key].style.left = `${(vec.x * 0.5 + 0.5) * width}px`;
+      zoneBannerElements[key].style.top = `${(-(vec.y * 0.5) + 0.5) * height}px`;
+    });
+
+    AGENTS.forEach(agent => {
+      const ctrl = agentControllers[agent.id];
+      const worldPos = new THREE.Vector3(
+        ctrl.root.position.x,
+        ctrl.root.position.y + 2.85,
+        ctrl.root.position.z
+      );
+      worldPos.project(camera);
+
+      const el = labelElements[agent.id];
+      el.style.left = `${(worldPos.x * 0.5 + 0.5) * width}px`;
+      el.style.top = `${(-(worldPos.y * 0.5) + 0.5) * height}px`;
+    });
+  }
+
+  function onWindowResize() {
+    const container = document.getElementById('canvas3dContainer');
+    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(container.clientWidth, container.clientHeight);
+  }
+
+  function focusCameraZone(zoneKey) {
+    isCameraTransitioning = true;
+    if (zoneKey === 'all') {
+      targetCamPos.set(0, 32, 34);
+      targetLookAt.set(0, 0, 0);
+      return;
+    }
+    if (zoneKey === 'top') {
+      targetCamPos.set(0, 46, 3);
+      targetLookAt.set(0, 0, 0);
+      return;
+    }
+    const z = ZONES_3D[zoneKey];
+    if (z) {
+      const dist = z.isCeo ? 12 : (z.isConf ? 15 : 13.5);
+      targetCamPos.set(z.x, 13.5, z.z + dist);
+      targetLookAt.set(z.x, 1.2, z.z);
+    }
+  }
+
+  function inspectAgent3D(agent) {
+    const ctrl = agentControllers[agent.id];
+    isCameraTransitioning = true;
+    targetCamPos.set(ctrl.root.position.x, 8.5, ctrl.root.position.z + 9.5);
+    targetLookAt.set(ctrl.root.position.x, 1.5, ctrl.root.position.z);
+
+    setBubbleText(agent.id, `🫡 ${agent.name} ${agent.rank}입니다!`, true);
+    setTimeout(() => setBubbleText(agent.id, agent.idleMsg, false), 2500);
+  }
+
+  // =========================================================================
+  // 7. 대표님 업무 지시 2단계 시나리오:
+  //    [1단계] 팀원들이 한지훈 팀장/중앙 대회의실로 모여 보고
+  //    [2단계] 한지훈 팀장이 미드센추리 사장실로 걸어 들어가 대표님께 단독 보고!
+  // =========================================================================
+  const INITIAL_LOGS = [
+    { dept: '👑 미드센추리사장실', color: '#92400e', text: '우측 상단 <strong>대표이사 사장실</strong>(월넛 데스크, 카멜 가죽 소파, 오렌지 머쉬룸 램프, LP 턴테이블, 체커보드 러그)이 구축되었습니다.' },
+    { dept: '🤝 중앙대회의실', color: '#1e293b', text: '오피스 정중앙에 <strong>14인용 중앙 대회의실</strong>이 배치되어 전 직원이 모여 회의할 수 있습니다.' }
+  ];
+
+  function addIlchonLog(dept, color, htmlText) {
+    const list = document.getElementById('ilchonList');
+    const item = document.createElement('div');
+    item.className = 'ilchon-item';
+    item.innerHTML = `<span class="badge" style="background:${color};">${dept}</span><span>${htmlText}</span>`;
+    list.prepend(item);
+  }
+
+  function runScenario(type, customText = '') {
+    const badge = document.getElementById('flowBadge');
+    badge.className = 'flow-status-badge working';
+    const chatWindow = document.getElementById('chatWindow');
+
+    let ceoCommandText = customText;
+    let step1Callback;
+
+    if (type === 'all') {
+      ceoCommandText = customText || '한 팀장, 중앙 대회의실로 전 직원 소집해서 회의한 다음 사장실로 들어와서 통합 보고해.';
+      badge.innerText = '🟠 [1단계] 정중앙 대회의실로 전 직원 이동 및 전략회의 진행중...';
+      step1Callback = (next) => triggerCenterMeeting(next);
+    } else if (type === 'lamurmur') {
+      ceoCommandText = customText || '한 팀장, 라머머 개발·마케팅팀 보고 받아서 사장실로 들어와 www.lamurmur.com 14K·실버 신상 브리핑해.';
+      badge.innerText = '🟠 [1단계] 라머머팀 → 한지훈 팀장 자리로 걸어가 보고서 제출중...';
+      step1Callback = (next) => triggerTeamToLeaderReport(['lm_r1', 'lm_r2', 'lm_m1', 'lm_m2', 'adm_1'], next);
+    } else if (type === 'mafacon') {
+      ceoCommandText = customText || '한 팀장, 마파송 서칭·마케팅팀 보고 받아서 사장실로 들어와 블링홍 공구(70%)·상시(30%) 브리핑해.';
+      badge.innerText = '🟠 [1단계] 마파송팀 → 한지훈 팀장 자리로 걸어가 보고서 제출중...';
+      step1Callback = (next) => triggerTeamToLeaderReport(['mf_t1', 'mf_t2', 'mf_m1', 'mf_m2', 'adm_2'], next);
+    } else if (type === 'finance') {
+      ceoCommandText = customText || '한 팀장, 관리팀 재무·회계 보고 받아서 사장실로 들어와 원가율·공구정산 브리핑해.';
+      badge.innerText = '🟠 [1단계] 관리팀(김민서·이준호) → 한지훈 팀장 자리로 걸어가 보고중...';
+      step1Callback = (next) => triggerTeamToLeaderReport(['adm_1', 'adm_2', 'hq_2'], next);
+    }
+
+    const ceoMsg = document.createElement('div');
+    ceoMsg.className = 'msg-ceo';
+    ceoMsg.innerText = `👑 대표님 (미드센추리 사장실): "${ceoCommandText}"`;
+    chatWindow.appendChild(ceoMsg);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+
+    // 1단계 실행 (팀원 집결 / 중앙 대회의실 회의) -> 완료 후 2단계 (한지훈 팀장이 사장실로 걸어 들어가 대표님께 독대 보고!)
+    step1Callback(() => {
+      badge.innerText = '🟠 [2단계] 한지훈 팀장 → 미드센추리 사장실로 걸어 들어가 대표님께 독대 보고중!';
+      triggerCeoDirectReport(() => {
+        badge.className = 'flow-status-badge';
+        badge.innerText = '🟢 한지훈 팀장 사장실 입실 & 대표님 독대 보고 완료!';
+
+        const leaderMsg = document.createElement('div');
+        leaderMsg.className = 'msg-leader';
+        leaderMsg.innerHTML = buildLeaderReportHTML(type, ceoCommandText);
+        chatWindow.appendChild(leaderMsg);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+
+        setTimeout(() => {
+          triggerReturnToDesks();
+        }, 3800);
+      });
+    });
+  }
+
+  function buildLeaderReportHTML(type, cmd) {
+    if (type === 'lamurmur') {
+      return `
+        <div class="report-title">📑 [사장실 입실 독대보고] 라머머(La Murmur) 14K·고급실버 브리핑</div>
+        <div class="report-section lm">
+          <h5>🧪 1. 라머머 신제품개발실 (윤채원 수석 · 강태윤 연구원 취합)</h5>
+          • <strong>세공/디자인</strong>: 14K 골드 &amp; 고중량 925 실버 '뮤즈 레이어드' 5종 세공 검수 완료<br>
+          • <strong>품질</strong>: 변색 방지 프리미엄 도금 및 자사몰 전용 시그니처 주얼리 박스 적용
+        </div>
+        <div class="report-section lm">
+          <h5>📣 2. 라머머 마케팅실 (최수아 팀장 · 정우진 매니저 취합)</h5>
+          • <strong>자사몰(www.lamurmur.com)</strong>: 하이엔드 주얼리 룩북 캠페인 및 기프트 큐레이션 오픈<br>
+          • <strong>VIP CRM</strong>: 14K + 고급 실버 레이어드 세트 구매 시 객단가(AOV) 42% 상승
+        </div>
+        <div class="report-section adm">
+          <h5>💼 3. 관리팀 재무 검토 (김민서 책임)</h5>
+          • 금·은 시세 반영 목표 원가율 <strong>28.5%</strong>, 예상 공헌이익률 <strong>52%</strong>
+        </div>
+      `;
+    }
+    if (type === 'mafacon') {
+      return `
+        <div class="report-title">📑 [사장실 입실 독대보고] 마파송(Ma Façon) 블링홍 공구(70%) &amp; 상시(30%)</div>
+        <div class="report-section mf">
+          <h5>🔭 1. 마파송 신제품서칭실 (한소희 팀장 · 송민재 분석가 취합)</h5>
+          • <strong>블링홍 직접 착용·검증 픽</strong>: 봄 데일리 자켓/팬츠 + 포인트 양말 4팩 + 심플 저가 실버링/이어링 + 데일리 잡화 샘플 검수 완료<br>
+          • <strong>수요 예측</strong>: 오픈 직후 완판 대비 1차 공구 선발주 물량 확보
+        </div>
+        <div class="report-section mf">
+          <h5>🔥 2. 마파송 마케팅실 (오세훈 팀장 · 신예린 매니저 취합)</h5>
+          • <strong>공동구매(70%)</strong>: '블링홍이 직접 입고 신어본 찐후기' 릴스 티징 → 72시간 한정 공구 오픈<br>
+          • <strong>상시 판매(30%)</strong>: 양말 세트 + 심플 저가 실버 주얼리는 합배송 스테디셀러로 상시몰 고정 배치
+        </div>
+        <div class="report-section adm">
+          <h5>💼 3. 관리팀 정산 검토 (이준호 대리)</h5>
+          • 공구(70%) D+3 빠른 현금 정산으로 사입 원가 5% 추가 절감
+        </div>
+      `;
+    }
+    if (type === 'finance') {
+      return `
+        <div class="report-title">📑 [사장실 입실 독대보고] 관리팀 재무·회계·원가 통합 점검</div>
+        <div class="report-section adm">
+          <h5>💼 1. 관리팀 재무·회계실 (김민서 책임 · 이준호 대리 취합)</h5>
+          • <strong>라머머(고급실버·14K)</strong>: 평균 마진율 68% 고부가가치 구조 유지<br>
+          • <strong>마파송(블링홍 공구70%·상시30%)</strong>: 재고 체화율 3.2% 미만, 최상위 현금 회전율 달성
+        </div>
+      `;
+    }
+    return `
+      <div class="report-title">📑 [중앙 대회의실 의결 → 사장실 독대보고] 더제이 코퍼레이션 전사 브리핑</div>
+      <div class="report-section">
+        <h5>🎯 1. 중앙 대회의실 전사 회의 결과 (한지훈 · 서유진 · 박도현)</h5>
+        • 지시사항: <em>"${cmd}"</em><br>
+        • 정중앙 대회의실에서 6개 부서 13명 전원이 회의를 마치고, 제가 미드센추리 사장실로 직접 입실하여 대표님께 최종 보고드립니다.
+      </div>
+      <div class="report-section lm">
+        <h5>🌸 2. 라머머 본부 (마케팅: 최수아·정우진 / 개발: 윤채원·강태윤)</h5>
+        • 14K &amp; 925 실버 신상 세공 검수 및 <code>www.lamurmur.com</code> VIP 캠페인 런칭 준비 완료
+      </div>
+      <div class="report-section mf">
+        <h5>✨ 3. 마파송 본부 (마케팅: 오세훈·신예린 / 서칭: 한소희·송민재)</h5>
+        • 인플루언서 <strong>블링홍</strong> 실착용 검증 의류·양말·심플실버·잡화 공구(70%) 타임라인 및 상시(30%) 전환 세팅 완료
+      </div>
+      <div class="report-section adm">
+        <h5>💼 4. 관리팀 재무·회계실 (김민서 책임 · 이준호 대리)</h5>
+        • 14K 금·은 세공 원가율 및 블링홍 공구 정산 현금흐름 이상 무(A+)
+      </div>
+    `;
+  }
+
+  function handleCustomOrder() {
+    const input = document.getElementById('ceoInput');
+    const val = input.value.trim();
+    if (!val) return;
+    input.value = '';
+    if (val.includes('라머머') || val.includes('14k') || val.includes('14K') || val.includes('주얼리')) {
+      runScenario('lamurmur', val);
+    } else if (val.includes('마파송') || val.includes('블링홍') || val.includes('공구') || val.includes('양말')) {
+      runScenario('mafacon', val);
+    } else if (val.includes('재무') || val.includes('회계') || val.includes('관리') || val.includes('원가')) {
+      runScenario('finance', val);
+    } else {
+      runScenario('all', val);
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    init3DOffice();
+    INITIAL_LOGS.slice().reverse().forEach(l => addIlchonLog(l.dept, l.color, l.text));
+  });
+</script>
+
+</body>
+</html>
